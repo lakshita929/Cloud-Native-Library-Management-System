@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.37.0 (HEAD)
+  labels:
+    io.kompose.service: borrow-service
+  name: borrow-service
+spec:
+  ports:
+    - name: "5004"
+      port: 5004
+      targetPort: 5004
+  selector:
+    io.kompose.service: borrow-service

@@ -1,0 +1,111 @@
+version: "3.9"
+
+services:
+
+  #POSTGRES DATABASE
+  library_management_db:
+    image: postgres:15
+    container_name: library_management_db
+    restart: always
+    environment:
+      POSTGRES_DB: library_management_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - library_management_data:/var/lib/postgresql/data
+    networks:
+      - library_management_network
+
+
+  #USER SERVICE
+  user_service:
+    build: ./UserService
+    container_name: user_service
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: library_management_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: library_management_db
+
+      # RabbitMQ ENV
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+
+    depends_on:
+      - library_management_db
+      - rabbitmq
+    networks:
+      - library_management_network
+
+
+  # ========== BOOK SERVICE ==========
+  book_service:
+    build: ./BookService
+    container_name: book_service
+    ports:
+      - "5006:5006"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: library_management_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: library_management_db
+    depends_on:
+      - library_management_db
+    networks:
+      - library_management_network
+
+
+  # ========== BORROW SERVICE ==========
+  borrow_service:
+    build: ./BorrowService
+    container_name: borrow_service
+    ports:
+      - "5004:5004"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: library_management_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: library_management_db
+
+      # RabbitMQ config
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+
+    depends_on:
+      - library_management_db
+      - rabbitmq
+    networks:
+      - library_management_network
+
+
+  #RABBITMQ
+  rabbitmq:
+    image: rabbitmq:3.13-rc-management
+    container_name: rabbitmq
+    restart: always
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - library_management_network
+
+
+networks:
+  library_management_network:
+
+volumes:
+  library_management_data:

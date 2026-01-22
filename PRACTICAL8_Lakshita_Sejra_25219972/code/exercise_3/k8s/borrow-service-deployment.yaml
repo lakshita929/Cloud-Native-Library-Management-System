@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+    kompose.version: 1.37.0 (HEAD)
+  labels:
+    io.kompose.service: borrow-service
+  name: borrow-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: borrow-service
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o k8s/
+        kompose.version: 1.37.0 (HEAD)
+      labels:
+        io.kompose.service: borrow-service
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: library_management_db
+            - name: POSTGRES_HOST
+              value: library-management-db
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: user
+          envFrom:
+            - configMapRef:
+                name: env
+          image: lakshitasejra/library-borrow-service:exercise3
+          name: borrow-service
+          ports:
+            - containerPort: 5004
+              protocol: TCP
+      restartPolicy: Always

@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  RABBITMQ_DEFAULT_PASS: library_pass
+  RABBITMQ_DEFAULT_USER: library_user
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: borrow-service-env
+  name: env

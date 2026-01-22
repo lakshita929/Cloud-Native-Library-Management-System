@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  user_service:
+    build: ./UserService
+    container_name: user_service
+    ports:
+      - "5002:5002"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: library_management_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: library_management_db
+    depends_on:
+      - library_management_db
+    networks:
+      - library_management_network
+
+  book_service:
+    build: ./BookService
+    container_name: book_service
+    ports:
+      - "5006:5006"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: library_management_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: library_management_db
+    depends_on:
+      - library_management_db
+    networks:
+      - library_management_network
+
+  library_management_db:
+    image: postgres:15
+    container_name: library_management_db
+    restart: always
+    environment:
+      POSTGRES_DB: library_management_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - library_management_data:/var/lib/postgresql/data
+    networks:
+      - library_management_network
+
+networks:
+  library_management_network:
+
+volumes:
+  library_management_data:
